@@ -2,23 +2,19 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import classNames from 'classnames';
 import { getAnswerFor } from 'riddle-exam';
-
-type Riddle = {
-    id: string;
-    contents: string;
-    answers: {
-        id: string;
-        text: string;
-    }[];
-};
+import { getRandomRiddle, Riddle } from './riddles/domain/riddlesService';
+import { useRiddlesCollection } from './riddles/domain/useRiddlesCollection';
 
 export const RiddlePage = () => {
     const { id } = useParams<{ id: string }>();
+
+    const riddles = useRiddlesCollection();
+    const randomRiddle = useMemo(() => getRandomRiddle(riddles, id), [riddles, id]);
+
     const [riddle, setRiddle] = useState<Riddle>();
     const [isLoading, setIsLoading] = useState(true);
     const [correct, setCorrect] = useState<{ id: string }>();
     const [selected, setSelected] = useState<string>();
-    const [random, setRandom] = useState<string>();
 
     const handleClick = async (id: string) => {
         if (selected) {
@@ -36,19 +32,6 @@ export const RiddlePage = () => {
         () => riddle?.answers?.toSorted(() => Math.random() - 0.5),
         [riddle?.answers],
     );
-
-    useEffect(() => {
-        if (correct) {
-            fetch('http://localhost:3000/riddles')
-                .then((response) => response.json())
-                .then((riddles: Riddle[]) => {
-                    const ids = riddles
-                        .map(({ id: riddleId }) => riddleId)
-                        .filter((riddleId) => riddleId !== id);
-                    setRandom(ids[Math.floor(Math.random() * ids.length)]);
-                });
-        }
-    }, [correct]);
 
     useEffect(() => {
         fetch(`http://localhost:3000/riddles/${id}`)
@@ -97,9 +80,13 @@ export const RiddlePage = () => {
                     {'This time your answer is wrong.'}
                 </div>
             )}
-            {correct && random && (
+            {correct && randomRiddle && (
                 <div className="mt-5">
-                    <Link to={`/riddle/${random}`} reloadDocument className="underline">
+                    <Link
+                        to={`/riddle/${randomRiddle.id}`}
+                        reloadDocument
+                        className="underline"
+                    >
                         Play one more
                     </Link>
                 </div>
