@@ -10,9 +10,9 @@ export const LandingPage = () => {
                 <p>Work Interval: {workInterval}</p>
                 <p>Timestamp: {timestamp}</p>
                 <div className="p-20 text-center">
-                    {riddle.id && (
+                    {riddle?.id && (
                         <Link
-                            to={`/riddle/${riddle.id}`}
+                            to={`/riddle/${riddle?.id}`}
                             className="border border-blue-500 p-5"
                         >
                             Resolve random riddle
